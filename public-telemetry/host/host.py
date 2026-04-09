@@ -98,7 +98,7 @@ def process_rawdata(data):
 			if len(record) > 0:
 				record = record.decode("utf8")
 				data_debug.log(f"record received: {record}")
-			process_record(record)
+				process_record(record)
 
 		except Exception as e:
 			info_debug.log(f"exception: {e}")
