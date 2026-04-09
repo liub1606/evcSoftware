@@ -32,7 +32,7 @@ server_addr = args.server_address
 conf_file = args.config
 serial_port = args.serial_port
 info_debug = Debugger(args.verbose >= 1) # debugger for general information
-data_debug = Debugger(args.verbose >= 2) # debugger for data (fills console)
+data_debug = Debugger(args.verbose >= 2) # debugger for data (fills console really fast haha)
 
 # config file stuff
 config = configparser.ConfigParser()
@@ -66,7 +66,6 @@ ser = serial.Serial(serial_port, 9600, timeout=0)
 info_debug.log("successfully connected")
 
 rawdata = b""
-
 
 # continuously poll serial and process records
 def poll_serial(ser):

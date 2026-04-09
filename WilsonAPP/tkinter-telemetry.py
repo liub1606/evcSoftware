@@ -13,7 +13,7 @@ import os
 import datetime
 import time
 
-serialport = '/dev/tty'
+serialport = '/dev/ttyUSB0'
 
 playbacktick_ms = 100
 # TODO: comment this line out to record a live session
