@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<link rel="stylesheet" href="/src/style.css" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>lhss evc telemetry interface</title>
+	</head>
+	<body>
+		<button class="outline" id="dat-refresh">refresh data</button>
+		<p>timestamp (unix nanos) <code id="timestamp"></code></p>
+		<p>busv <code id="busv"></code> volts</p>
+		<p>current <code id="current"></code> amps</p>
+		<p>power <code id="power"></code> watts</p>
+		<p>hall_speed <code id="hall-speed"></code> km/h</p>
+		<script type="module" src="/src/main.js"></script>
+	</body>
+</html>

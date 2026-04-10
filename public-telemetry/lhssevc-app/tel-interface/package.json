@@ -1,0 +1,17 @@
+{
+	"name": "tel-interface",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"preview": "vite preview"
+	},
+	"devDependencies": {
+		"vite": "^8.0.4"
+	},
+	"dependencies": {
+		"@knadh/oat": "^0.5.1"
+	}
+}
