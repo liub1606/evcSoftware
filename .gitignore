@@ -27,7 +27,7 @@ dist-ssr
 
 venv
 .venv
-evclog_*
+# evclog_* this is actually important lolll
 __pycache__
 # END OLD GITIGNORE
 

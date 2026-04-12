@@ -12,6 +12,9 @@
 		"vite": "^8.0.4"
 	},
 	"dependencies": {
-		"@knadh/oat": "^0.5.1"
+		"@knadh/oat": "^0.5.1",
+		"chart.js": "^4.5.1",
+		"chartjs-adapter-date-fns": "^3.0.0",
+		"date-fns": "^4.1.0"
 	}
 }

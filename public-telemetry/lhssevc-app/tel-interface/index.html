@@ -7,13 +7,37 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>lhss evc telemetry interface</title>
 	</head>
-	<body>
-		<button class="outline" id="dat-refresh">refresh data</button>
-		<p>timestamp (unix nanos) <code id="timestamp"></code></p>
-		<p>busv <code id="busv"></code> volts</p>
-		<p>current <code id="current"></code> amps</p>
-		<p>power <code id="power"></code> watts</p>
-		<p>hall_speed <code id="hall-speed"></code> km/h</p>
+	<body data-sidebar-layout>
+		<nav data-topnav>
+			<p>lhss evc telemetry web interface 🔋🏎️📡😼💥</p>
+		</nav>
+
+		<aside data-sidebar>
+			<p>refreshed <code id="timestamp"></code></p>
+			<!-- <p id="timestamp"></p> -->
+			<p>busv <code id="busv"></code> volts</p>
+			<p>current <code id="current"></code> amps</p>
+			<p>power <code id="power"></code> watts</p>
+			<p>hall_speed <code id="hall-speed"></code> km/h</p>
+			<p class="small">records received <code id="records"></code></p>
+			<p class="small">requests made <code id="requests"></code></p>
+		</aside>
+
+		<main>
+			<div class="canvas-container">
+				<canvas id="busv-chart"></canvas>
+			</div>
+			<div class="canvas-container">
+				<canvas id="current-chart"></canvas>
+			</div>
+			<div class="canvas-container">
+				<canvas id="power-chart"></canvas>
+			</div>
+			<div class="canvas-container">
+				<canvas id="hallspeed-chart"></canvas>
+			</div>
+		</main>
+
 		<script type="module" src="/src/main.js"></script>
 	</body>
 </html>

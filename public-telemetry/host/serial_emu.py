@@ -5,13 +5,14 @@ import time
 import os
 
 class VirtualSerial:
-	def __init__(self, port, freq, vals, verbose=False):
+	def __init__(self, port, freq, vals, debug):
 		# self.controller, self.endpoint = pty.openpty()
 		# self.endpoint_name = os.ttyname(self.endpoint)
 		self.port = port
 		self.freq = freq
-		self.debug = Debugger(verbose)
+		self.debug = debug
 		self.vals = [(val[0], RandomNoise(5, val[1][2], val[1][0], val[1][1])) for val in vals]
+		self.kill_flag = False
 
 	def start(self):
 		self.debug.log(f"EMULATOR: connecting to serial port {self.port}")
@@ -33,3 +34,9 @@ class VirtualSerial:
 			start = time.time()
 			self.send_record()
 			time.sleep(max(0, 1 / self.freq - (time.time() - start)))
+			if self.kill_flag:
+				break
+
+	def kill(self):
+		self.ser.close()
+		self.kill_flag = True
