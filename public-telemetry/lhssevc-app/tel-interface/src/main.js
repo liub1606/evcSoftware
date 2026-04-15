@@ -11,17 +11,17 @@ var cur_entry = 0;
 var req = 0;
 
 Chart.register(Colors);
-Chart.defaults.color = "white";
+Chart.defaults.color = "black";
 const volts_ctx = document.getElementById("busv-chart");
-const volts_chart = new Chart(volts_ctx, datachart_conf("busv (V)", "#81beff"));
+const volts_chart = new Chart(volts_ctx, datachart_conf("busv (V)", "#ea9d34"));
 const amps_ctx = document.getElementById("current-chart");
-const amps_chart = new Chart(amps_ctx, datachart_conf("current (A)", "#ffb8da"));
+const amps_chart = new Chart(amps_ctx, datachart_conf("current (A)", "#b4637a"));
 const watts_ctx = document.getElementById("power-chart");
-const watts_chart = new Chart(watts_ctx, datachart_conf("power (W)", "#fff3af"));
+const watts_chart = new Chart(watts_ctx, datachart_conf("power (W)", "#286983"));
 const kmh_ctx = document.getElementById("hallspeed-chart");
-const kmh_chart = new Chart(kmh_ctx, datachart_conf("hall speed (km/h)", "#dfb8ff"));
+const kmh_chart = new Chart(kmh_ctx, datachart_conf("hall speed (km/h)", "#907aa9"));
 const soc_ctx = document.getElementById("soc-chart");
-const soc_chart = new Chart(soc_ctx, datachart_conf("soc (%)", "#b8ffc4"));
+const soc_chart = new Chart(soc_ctx, datachart_conf("soc (%)", "#d7827e"));
 
 function datachart_conf(label, color) {
 	return {type: "line",
@@ -123,4 +123,4 @@ async function refresh_data() {
 }
 
 refresh_data();
-setInterval(refresh_data, 5000);
+setInterval(refresh_data, 2000);

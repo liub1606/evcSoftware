@@ -1,6 +1,30 @@
+:root {
+	--background: #faf4ed;
+	--foreground: #575279;
+	--card: #faf4ed;
+	--card-foreground: #575279;
+	--primary: #d7827e;
+	--primary-foreground: #fffaf3;
+	--secondary: #f2e9e1;
+	--secondary-foreground: #797593;
+	--muted: #f2e9e1;
+	--muted-foreground: #9893a5;
+	--faint: #fffaf3;
+	--accent: #f2e9e1;
+	--danger: #b4637a;
+	--danger-foreground: #fffaf3;
+	--success: #56949f;
+	--success-foreground: #fffaf3;
+	--warning: #ea9d34;
+	--warning-foreground: #575279;
+	--border: #cecacd;
+	--input: #cecacd;
+	--ring: #d7827e;
+}
+
 body {
 /* 	grid-template-columns: 256px 1fr; */
-	color: white;
+	color: black;
 }
 
 nav {
@@ -38,7 +62,7 @@ button {
 
 p.small {
 	font-size: 10pt;
-	color: #DDD;
+	color: #222222;
 	margin-top: 4px;
 	margin-bottom: 4px;
 }

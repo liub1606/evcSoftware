@@ -18,7 +18,7 @@ def root():
 @app.route("/new-entries", methods=["POST"])
 def new_entry():
 	global records
-	print(request.json)
+	# print(request.json)
 	records += request.json["records"]
 	return '', 200
 
