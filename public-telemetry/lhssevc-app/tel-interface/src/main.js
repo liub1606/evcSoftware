@@ -6,7 +6,7 @@ import 'chartjs-adapter-date-fns';
 var base_url = '';
 // base_url = "http://127.0.0.1:8080" // for local development, set to empty when html served by server
 var records = [];
-const max_vis_len = 1000;
+const max_vis_len = 5000;
 var cur_entry = 0;
 var req = 0;
 
@@ -20,6 +20,8 @@ const watts_ctx = document.getElementById("power-chart");
 const watts_chart = new Chart(watts_ctx, datachart_conf("power (W)", "#fff3af"));
 const kmh_ctx = document.getElementById("hallspeed-chart");
 const kmh_chart = new Chart(kmh_ctx, datachart_conf("hall speed (km/h)", "#dfb8ff"));
+const soc_ctx = document.getElementById("soc-chart");
+const soc_chart = new Chart(soc_ctx, datachart_conf("soc (%)", "#b8ffc4"));
 
 function datachart_conf(label, color) {
 	return {type: "line",
@@ -87,33 +89,38 @@ async function refresh_data() {
 		cur_entry = result.upto;
 		// console.log(result.records);
 		records = records.concat(result.records);
+		records = records.slice(-max_vis_len);
 		console.log(records);
-		var date = new Date(records[records.length - 1].timestamp / 1_000_000);
-		document.getElementById("timestamp").textContent = date.toLocaleString();
-		document.getElementById("busv").textContent = records[records.length - 1].busv;
-		document.getElementById("current").textContent = records[records.length - 1].current;
-		document.getElementById("power").textContent = records[records.length - 1].power;
-		document.getElementById("hall-speed").textContent = records[records.length - 1].hall_speed;
+		var date = new Date(records[records.length - 1][0] / 1_000_000);
+		document.getElementById("timestamp").textContent = date.toLocaleTimeString();
+		document.getElementById("busv").textContent = records[records.length - 1][1].toFixed(2);
+		document.getElementById("current").textContent = records[records.length - 1][2].toFixed(2);
+		document.getElementById("power").textContent = records[records.length - 1][3].toFixed(2);
+		document.getElementById("hall-speed").textContent = records[records.length - 1][5].toFixed(2);
+		document.getElementById("soc").textContent = records[records.length - 1][4].toFixed(2);
 		document.getElementById("records").textContent = records.length;
 		document.getElementById("requests").textContent = req;
 		for (let i = 0; i < result.records.length; i++) {
-			volts_chart.data.datasets[0].data.push({x: result.records[i].timestamp / 1_000_000, y: result.records[i].busv});
-			amps_chart.data.datasets[0].data.push({x: result.records[i].timestamp / 1_000_000, y: result.records[i].current});
-			watts_chart.data.datasets[0].data.push({x: result.records[i].timestamp / 1_000_000, y: result.records[i].power});
-			kmh_chart.data.datasets[0].data.push({x: result.records[i].timestamp / 1_000_000, y: result.records[i].hall_speed});
+			volts_chart.data.datasets[0].data.push({x: result.records[i][0] / 1_000_000, y: result.records[i][1]});
+			amps_chart.data.datasets[0].data.push({x: result.records[i][0] / 1_000_000, y: result.records[i][2]});
+			watts_chart.data.datasets[0].data.push({x: result.records[i][0] / 1_000_000, y: result.records[i][3]});
+			kmh_chart.data.datasets[0].data.push({x: result.records[i][0] / 1_000_000, y: result.records[i][5]});
+			soc_chart.data.datasets[0].data.push({x: result.records[i][0] / 1_000_000, y: result.records[i][4]});
 		}
 		volts_chart.data.datasets[0].data = volts_chart.data.datasets[0].data.slice(-max_vis_len);
 		amps_chart.data.datasets[0].data = amps_chart.data.datasets[0].data.slice(-max_vis_len);
 		watts_chart.data.datasets[0].data = watts_chart.data.datasets[0].data.slice(-max_vis_len);
 		kmh_chart.data.datasets[0].data = kmh_chart.data.datasets[0].data.slice(-max_vis_len);
+		soc_chart.data.datasets[0].data = soc_chart.data.datasets[0].data.slice(-max_vis_len);
 		volts_chart.update();
 		amps_chart.update();
 		watts_chart.update();
 		kmh_chart.update();
+		soc_chart.update();
 	} catch (error) {
 		console.error(error.message);
 	}
 }
 
 refresh_data();
-setInterval(refresh_data, 3000);
+setInterval(refresh_data, 5000);

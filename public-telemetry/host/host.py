@@ -148,18 +148,28 @@ def process_telemetry_record(record):
 			f"busv: {busv} volts",
 			f"current: {current} amps",
 			f"power: {power} watts",
+			f"soc: {volts2soc_agm(busv)}%"
 			f"hall speed: {hall_speed} km/h", '']))
 		data_writer.writerow((busv, current, power, hall_speed))
 
 		if server_addr is not None:
-			uploader.new_record({
-				"timestamp": time.time_ns(), # timestamp in unix nanoseconds
-				"busv": busv,
-				"current": current,
-				"power": power,
-				"hall_speed": hall_speed})
+			# uploader.new_record({
+			# 	"timestamp": time.time_ns(), # timestamp in unix nanoseconds
+			# 	"busv": busv,
+			# 	"current": current,
+			# 	"power": power,
+			# 	"soc": volts2soc_agm(busv),
+			# 	"hall_speed": hall_speed})
+			uploader.new_record([
+				time.time_ns(),
+				busv,
+				current,
+				power,
+				volts2soc_agm(busv),
+				hall_speed
+			])
 
-	except ValueError:
-		info_debug.log("invalid telemetry record")
+	except ValueError as e:
+		info_debug.log(f"invalid telemetry record: {e}")
 
 poll_serial(ser)

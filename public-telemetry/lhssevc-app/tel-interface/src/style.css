@@ -1,5 +1,5 @@
 body {
-	grid-template-columns: 360px 1fr;
+/* 	grid-template-columns: 256px 1fr; */
 	color: white;
 }
 
@@ -14,10 +14,10 @@ aside {
 
 main {
 	padding: 32px;
-/* 	width: 100%; */
 	height: 100%;
 	display: flex;
-	flex-direction: column;
+	flex-direction: row;
+	flex-wrap: wrap;
 }
 
 p {
@@ -30,8 +30,10 @@ button {
 }
 
 .canvas-container {
-	flex: 1;
-	min-height: 0;
+	flex-grow: 1;
+/* 	min-height: 0; */
+	width: 512px;
+	height: 256px;
 }
 
 p.small {
