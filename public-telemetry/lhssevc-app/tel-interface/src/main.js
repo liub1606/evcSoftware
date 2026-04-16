@@ -1,16 +1,15 @@
 import '@knadh/oat/oat.min.css';
 import '@knadh/oat/oat.min.js';
-import {Chart, Colors} from 'chart.js/auto';
+import Chart from 'chart.js/auto';
 import 'chartjs-adapter-date-fns';
 
 var base_url = '';
-// base_url = "http://127.0.0.1:8080" // for local development, set to empty when html served by server
+base_url = "http://127.0.0.1:8080" // for local development, set to empty when html served by server
 var records = [];
 const max_vis_len = 5000;
 var cur_entry = 0;
 var req = 0;
 
-Chart.register(Colors);
 Chart.defaults.color = "black";
 const volts_ctx = document.getElementById("busv-chart");
 const volts_chart = new Chart(volts_ctx, datachart_conf("busv (V)", "#ea9d34"));
@@ -31,7 +30,8 @@ function datachart_conf(label, color) {
 				label: label,
 				pointStyle: false,
 				backgroundColor: color,
-				borderColor: color
+				borderColor: color,
+				indexAxis: 'x'
 			}]
 		},
 		options: {
@@ -61,9 +61,6 @@ function datachart_conf(label, color) {
 				title: {
 					display: true,
 					text: label
-				},
-				colors: {
-					enabled: true
 				}
 			},
 			responsive: true,
@@ -101,11 +98,12 @@ async function refresh_data() {
 		document.getElementById("records").textContent = records.length;
 		document.getElementById("requests").textContent = req;
 		for (let i = 0; i < result.records.length; i++) {
-			volts_chart.data.datasets[0].data.push({x: result.records[i][0] / 1_000_000, y: result.records[i][1]});
-			amps_chart.data.datasets[0].data.push({x: result.records[i][0] / 1_000_000, y: result.records[i][2]});
-			watts_chart.data.datasets[0].data.push({x: result.records[i][0] / 1_000_000, y: result.records[i][3]});
-			kmh_chart.data.datasets[0].data.push({x: result.records[i][0] / 1_000_000, y: result.records[i][5]});
-			soc_chart.data.datasets[0].data.push({x: result.records[i][0] / 1_000_000, y: result.records[i][4]});
+			const timestamp = new Date(result.records[i][0] / 1_000_000);
+			volts_chart.data.datasets[0].data.push({x: timestamp, y: result.records[i][1]});
+			amps_chart.data.datasets[0].data.push({x: timestamp, y: result.records[i][2]});
+			watts_chart.data.datasets[0].data.push({x: timestamp, y: result.records[i][3]});
+			kmh_chart.data.datasets[0].data.push({x: timestamp, y: result.records[i][5]});
+			soc_chart.data.datasets[0].data.push({x: timestamp, y: result.records[i][4]});
 		}
 		volts_chart.data.datasets[0].data = volts_chart.data.datasets[0].data.slice(-max_vis_len);
 		amps_chart.data.datasets[0].data = amps_chart.data.datasets[0].data.slice(-max_vis_len);
