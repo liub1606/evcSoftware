@@ -4,7 +4,7 @@ import Chart from 'chart.js/auto';
 import 'chartjs-adapter-date-fns';
 
 var base_url = '';
-base_url = "http://127.0.0.1:8080" // for local development, set to empty when html served by server
+// base_url = "http://127.0.0.1:8080" // for local development, set to empty when html served by server
 var records = [];
 const max_vis_len = 5000;
 var cur_entry = 0;
@@ -121,4 +121,4 @@ async function refresh_data() {
 }
 
 refresh_data();
-setInterval(refresh_data, 2000);
+setInterval(refresh_data, 5000);

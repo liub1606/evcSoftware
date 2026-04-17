@@ -7,6 +7,7 @@ import argparse
 import serial
 import time
 import csv
+import os
 
 # argparse stuff
 argparser = argparse.ArgumentParser(
@@ -55,9 +56,9 @@ hall_speed_fac = float(config["calibration"]["hall_speed_fac"])
 busv_lim = (float(config["limits"]["busv_min"]), int(config["limits"]["busv_max"]))
 current_lim = (float(config["limits"]["current_min"]), int(config["limits"]["current_max"]))
 hall_speed_lim = (float(config["limits"]["hall_speed_min"]), int(config["limits"]["hall_speed_max"]))
-csv_file = open(args.logfile, 'w')
+csv_file = open(args.logfile, 'a')
 data_writer = csv.writer(csv_file)
-data_writer.writerow(("busv", "current", "power", "hall_speed"))
+data_writer.writerow(("timestamp_ns", "busv", "current", "power", "hall_speed"))
 
 uploader = Uploader(int(config["general"]["cache_size"]), server_addr, data_debug)
 
@@ -75,6 +76,7 @@ ser = serial.Serial(serial_port, 9600, timeout=0)
 info_debug.log("successfully connected")
 
 rawdata = b""
+saved_records = 0
 
 # continuously poll serial and process records
 def poll_serial(ser):
@@ -131,17 +133,18 @@ def process_record(record):
 
 # actually process record
 def process_telemetry_record(record):
+	global saved_records
 	try:
 		busv = float(record[0]) * busv_fac # volts
 		current = float(record[1]) * current_fac # amps
 		power = float(record[2]) * power_fac # watts
 		hall_speed = float(record[3]) * hall_speed_fac # km/h
 
-		if not busv_lim[0] < busv < busv_lim[1]:
+		if not busv_lim[0] <= busv <= busv_lim[1]:
 			return # skip record
-		if not current_lim[0] < current < current_lim[1]:
+		if not current_lim[0] <= current <= current_lim[1]:
 			return # skip record
-		if not hall_speed_lim[0] < hall_speed < hall_speed_lim[1]:
+		if not hall_speed_lim[0] <= hall_speed <= hall_speed_lim[1]:
 			return # skip record
 
 		data_debug.log('\n'.join([
@@ -150,7 +153,14 @@ def process_telemetry_record(record):
 			f"power: {power} watts",
 			f"soc: {volts2soc_agm(busv)}%"
 			f"hall speed: {hall_speed} km/h", '']))
-		data_writer.writerow((busv, current, power, hall_speed))
+		data_writer.writerow((time.time_ns(), busv, current, power, hall_speed))
+		saved_records += 1
+
+		if saved_records >= int(config["general"]["save_freq"]):
+			saved_records = 0
+			csv_file.flush()
+			os.fsync(csv_file.fileno())
+			# close and reopen to save written data in event of crash (the software, not the car hopefully)
 
 		if server_addr is not None:
 			# uploader.new_record({
