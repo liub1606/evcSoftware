@@ -15,13 +15,13 @@
 		<aside data-sidebar>
 			<p>refreshed <code id="timestamp"></code></p>
 			<!-- <p id="timestamp"></p> -->
-			<p>busv <code id="busv"></code> volts</p>
-			<p>current <code id="current"></code> amps</p>
-			<p>power <code id="power"></code> watts</p>
+			<p>busv <code id="busv"></code> V</p>
+			<p>current <code id="current"></code> A</p>
+			<p>power <code id="power"></code> W</p>
 			<p>hall_speed <code id="hall-speed"></code> km/h</p>
 			<p>soc <code id="soc"></code>%</p>
-			<p>internal resistance <code id="internal-resistance"></code> m&ohm;</p>
-			<p>unloaded voltage <code id="unloaded-voltage"></code> volts</p>
+			<p>int res <code id="internal-resistance"></code> m&ohm;</p>
+			<p>busv unloaded <code id="unloaded-voltage"></code> V</p>
 			<p class="small">records received <code id="records"></code></p>
 			<p class="small">requests made <code id="requests"></code></p>
 		</aside>
@@ -37,7 +37,7 @@
 				<canvas id="current-chart"></canvas>
 			</div>
 			<div class="canvas-container">
-				<canvas id="power-chart"></canvas>
+				<canvas id="intres-chart"></canvas>
 			</div>
 			<div class="canvas-container">
 				<canvas id="hallspeed-chart"></canvas>

@@ -58,7 +58,7 @@ current_lim = (float(config["limits"]["current_min"]), int(config["limits"]["cur
 hall_speed_lim = (float(config["limits"]["hall_speed_min"]), int(config["limits"]["hall_speed_max"]))
 csv_file = open(args.logfile, 'a')
 data_writer = csv.writer(csv_file)
-data_writer.writerow(("timestamp_ns", "busv", "current", "power", "hall_speed"))
+data_writer.writerow(("timestamp_ns", "busv", "current", "power", "soc", "hall_speed", "int_r", "v_unloaded"))
 
 uploader = Uploader(int(config["general"]["cache_size"]), server_addr, data_debug)
 
@@ -159,17 +159,18 @@ def process_telemetry_record(record):
 			del saved_voltages[0]
 			del saved_currents[0]
 
-		v_unloaded, int_r = np.polyfit(saved_currents, saved_voltages, 1) # taken from /WilsonAPP/tkinter-telemetry.py
+		int_r, v_unloaded = np.polyfit(saved_currents, saved_voltages, 1) # taken from /WilsonAPP/tkinter-telemetry.py
+		int_r = -int_r * 1000
 		
 		data_debug.log('\n'.join([
 			f"busv: {busv} volts",
 			f"current: {current} amps",
 			f"power: {power} watts",
 			f"soc: {volts2soc_agm(v_unloaded)}%",
-			f"internal resistance: {-int_r * 1000} mΩ",
+			f"internal resistance: {int_r} mΩ",
 			f"unloaded voltage: {v_unloaded} volts",
 			f"hall speed: {hall_speed} km/h", '']))
-		data_writer.writerow((time.time_ns(), busv, current, power, hall_speed))
+		data_writer.writerow((time.time_ns(), busv, current, power, volts2soc_agm(v_unloaded), hall_speed, int_r, v_unloaded))
 		saved_records += 1
 
 		if saved_records >= int(config["general"]["save_freq"]):
@@ -193,7 +194,7 @@ def process_telemetry_record(record):
 				power,
 				volts2soc_agm(v_unloaded),
 				hall_speed,
-				-int_r * 1000, # internal resistance (milliohms)
+				int_r, # internal resistance (milliohms)
 				v_unloaded # unloaded voltage
 			])
 
