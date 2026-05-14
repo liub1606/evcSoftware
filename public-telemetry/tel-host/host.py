@@ -27,7 +27,10 @@ argparser.add_argument(
 	help="file directory to save data to (default: race-logs/evclog-<iso-8601-timestamp).csv")
 argparser.add_argument(
 	"-v", "--verbose", action="count", default=0,
-	help="verbosity (1 or 2)")
+	help="verbosity (0-2)")
+argparser.add_argument(
+	"-n", "--nolog", action="store_false",
+	help="use this flag to avoid logging data, helpful for development")
 argparser.add_argument(
 	"serial_port",
 	help="serial port to read from e.g. /dev/ttyUSB0 (testing? use 'socat -d2 pty pty' to make a pty)")
@@ -56,9 +59,10 @@ hall_speed_fac = float(config["calibration"]["hall_speed_fac"])
 busv_lim = (float(config["limits"]["busv_min"]), int(config["limits"]["busv_max"]))
 current_lim = (float(config["limits"]["current_min"]), int(config["limits"]["current_max"]))
 hall_speed_lim = (float(config["limits"]["hall_speed_min"]), int(config["limits"]["hall_speed_max"]))
-csv_file = open(args.logfile, 'a')
-data_writer = csv.writer(csv_file)
-data_writer.writerow(("timestamp_ns", "busv", "current", "power", "soc", "hall_speed", "int_r", "v_unloaded"))
+if args.nolog:
+	csv_file = open(args.logfile, 'a')
+	data_writer = csv.writer(csv_file)
+	data_writer.writerow(("timestamp_ns", "busv", "current", "power", "soc", "hall_speed", "int_r", "v_unloaded"))
 
 uploader = Uploader(int(config["general"]["cache_size"]), server_addr, data_debug)
 
@@ -99,7 +103,8 @@ def poll_serial(ser):
 			time.sleep(max(0, 1 / read_freq - (time.time() - start)))
 			# print("read with console, nonfunctional for now")
 	except KeyboardInterrupt:
-		csv_file.close()
+		if args.nolog:
+			csv_file.close()
 		if emulator_port is not None:
 			emu.kill() # australian behaviour... yes i could have named it .stop but this is funnier
 		return
@@ -170,10 +175,11 @@ def process_telemetry_record(record):
 			f"internal resistance: {int_r} mΩ",
 			f"unloaded voltage: {v_unloaded} volts",
 			f"hall speed: {hall_speed} km/h", '']))
-		data_writer.writerow((time.time_ns(), busv, current, power, volts2soc_agm(v_unloaded), hall_speed, int_r, v_unloaded))
+		if args.nolog:
+			data_writer.writerow((time.time_ns(), busv, current, power, volts2soc_agm(v_unloaded), hall_speed, int_r, v_unloaded))
 		saved_records += 1
 
-		if saved_records >= int(config["general"]["save_freq"]):
+		if saved_records >= int(config["general"]["save_freq"]) and args.nolog:
 			saved_records = 0
 			csv_file.flush()
 			os.fsync(csv_file.fileno())

@@ -129,4 +129,4 @@ async function refresh_data() {
 }
 
 refresh_data();
-setInterval(refresh_data, 5000);
+setInterval(refresh_data, 2000);
