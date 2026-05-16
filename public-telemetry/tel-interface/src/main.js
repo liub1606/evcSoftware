@@ -55,7 +55,8 @@ function datachart_conf(title, labels, colors) {
 				duration: 0
 			},
 			interaction: {
-				mode:"nearest",
+				mode: "nearest",
+				axis: "x",
 				intersect: false
 			},
 			plugins: {
