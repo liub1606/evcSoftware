@@ -53,6 +53,10 @@ button {
 	margin-bottom: 16px;
 }
 
+input[type=range] {
+	margin-bottom: 8px;
+}
+
 .canvas-container {
 	flex-grow: 1;
 /* 	min-height: 0; */

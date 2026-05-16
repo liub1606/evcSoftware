@@ -13,6 +13,8 @@
 		</nav>
 
 		<aside data-sidebar>
+			<input type="range" id="dat-range" min=6 max=16 step=1 val=10>
+			<p>data range <code id="range-num"></code></p>
 			<p>refreshed <code id="timestamp"></code></p>
 			<!-- <p id="timestamp"></p> -->
 			<p>busv <code id="busv"></code> V</p>
@@ -22,6 +24,8 @@
 			<p>soc <code id="soc"></code>%</p>
 			<p>int res <code id="internal-resistance"></code> m&ohm;</p>
 			<p>busv unloaded <code id="unloaded-voltage"></code> V</p>
+			<p>drain time <code id="drain-timestamp"></code></p>
+			<p>remaining <code id="remain-timestamp"></code> min</p>
 			<p class="small">records received <code id="records"></code></p>
 			<p class="small">requests made <code id="requests"></code></p>
 		</aside>

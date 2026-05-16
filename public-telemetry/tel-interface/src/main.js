@@ -4,9 +4,10 @@ import Chart from 'chart.js/auto';
 import 'chartjs-adapter-date-fns';
 
 var base_url = '';
-base_url = "http://127.0.0.1:8080" // for local development, set to empty when html served by server
+// base_url = "http://127.0.0.1:8080" // for local development, set to empty when html served by server
 var records = [];
-const max_vis_len = 2500;
+var max_vis_len = 2 ** document.getElementById("dat-range").value;
+document.getElementById("range-num").textContent = 2 ** document.getElementById("dat-range").value;
 var cur_entry = 0;
 var req = 0;
 
@@ -20,7 +21,7 @@ const ohms_chart = new Chart(ohms_ctx, datachart_conf("internal resistance (mΩ)
 const kmh_ctx = document.getElementById("hallspeed-chart");
 const kmh_chart = new Chart(kmh_ctx, datachart_conf("hall speed (km/h)", ["hall speed (km/h)"], ["#907aa9"]));
 const soc_ctx = document.getElementById("soc-chart");
-const soc_chart = new Chart(soc_ctx, datachart_conf("soc (%)", ["soc (%)"], ["#d7827e"]));
+const soc_chart = new Chart(soc_ctx, datachart_conf("soc (%)", ["soc (%)", "drain approximation"], ["#d7827e", "#575279"]));
 
 function datachart_conf(title, labels, colors) {
 	return {
@@ -91,8 +92,12 @@ async function refresh_data() {
 		records = records.concat(result.records);
 		records = records.slice(-max_vis_len);
 		console.log(records);
-		var date = new Date(records[records.length - 1][0] / 1_000_000);
-		document.getElementById("timestamp").textContent = date.toLocaleTimeString();
+		var time = new Date(records[records.length - 1][0] / 1_000_000);
+		var drain_time = new Date(records[records.length - 1][8] / 1_000_000);
+		var min_remain = (drain_time.getTime() - Date.now()) / 1000 / 60;
+		console.log(min_remain);
+		document.getElementById("timestamp").textContent = time.toLocaleTimeString();
+		document.getElementById("drain-timestamp").textContent = drain_time.toLocaleTimeString();
 		document.getElementById("busv").textContent = records[records.length - 1][1].toFixed(2);
 		document.getElementById("current").textContent = records[records.length - 1][2].toFixed(2);
 		document.getElementById("power").textContent = records[records.length - 1][3].toFixed(2);
@@ -100,6 +105,7 @@ async function refresh_data() {
 		document.getElementById("hall-speed").textContent = records[records.length - 1][5].toFixed(2);
 		document.getElementById("internal-resistance").textContent = records[records.length - 1][6].toFixed(2);
 		document.getElementById("unloaded-voltage").textContent = records[records.length - 1][7].toFixed(2);
+		document.getElementById("remain-timestamp").textContent = min_remain.toFixed(2);
 		document.getElementById("records").textContent = records.length;
 		document.getElementById("requests").textContent = req;
 		console.log(amps_chart.data.datasets[0]);
@@ -111,6 +117,9 @@ async function refresh_data() {
 			kmh_chart.data.datasets[0].data.push({x: timestamp, y: result.records[i][5]});
 			ohms_chart.data.datasets[0].data.push({x: timestamp, y: result.records[i][6]});
 			volts_chart.data.datasets[1].data.push({x: timestamp, y: result.records[i][7]});
+			soc_chart.data.datasets[1].data = [
+				{x: result.records[i][9] / 1_000_000, y: 100},
+				{x: result.records[i][8] / 1_000_000, y: 0}];
 		}
 		volts_chart.data.datasets[0].data = volts_chart.data.datasets[0].data.slice(-max_vis_len);
 		volts_chart.data.datasets[1].data = volts_chart.data.datasets[1].data.slice(-max_vis_len);
@@ -118,6 +127,7 @@ async function refresh_data() {
 		ohms_chart.data.datasets[0].data = ohms_chart.data.datasets[0].data.slice(-max_vis_len);
 		kmh_chart.data.datasets[0].data = kmh_chart.data.datasets[0].data.slice(-max_vis_len);
 		soc_chart.data.datasets[0].data = soc_chart.data.datasets[0].data.slice(-max_vis_len);
+		soc_chart.options.scales.x.min = records[0][0] / 1_000_000;
 		volts_chart.update();
 		amps_chart.update();
 		ohms_chart.update();
@@ -128,5 +138,18 @@ async function refresh_data() {
 	}
 }
 
+document.getElementById("dat-range").addEventListener("input", (event) => {
+	document.getElementById("range-num").textContent = 2 ** event.target.value;
+	max_vis_len = 2 ** document.getElementById("dat-range").value;
+	volts_chart.data.datasets[0].data = [];
+	volts_chart.data.datasets[1].data = [];
+	amps_chart.data.datasets[0].data = [];
+	ohms_chart.data.datasets[0].data = [];
+	kmh_chart.data.datasets[0].data = [];
+	soc_chart.data.datasets[0].data = [];
+	cur_entry = 0;
+	records = [];
+});
+
 refresh_data();
-setInterval(refresh_data, 2000);
+setInterval(refresh_data, 1000);

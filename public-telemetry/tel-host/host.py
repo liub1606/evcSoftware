@@ -48,8 +48,10 @@ emu_debug = Debugger(args.verbose >= 3) # debugger for serial emulator
 config = configparser.ConfigParser()
 config.read(args.config)
 
-write_freq = float(config["general"]["write_freq"])
-read_freq = float(config["general"]["read_freq"])
+write_freq = int(config["general"]["write_freq"])
+read_freq = int(config["general"]["read_freq"])
+res_soc_datrange = int(config["general"]["res_soc_datrange"])
+drain_datrange = int(config["general"]["drain_datrange"])
 
 busv_fac = float(config["calibration"]["busv_fac"])
 current_fac = float(config["calibration"]["current_fac"])
@@ -62,7 +64,7 @@ hall_speed_lim = (float(config["limits"]["hall_speed_min"]), int(config["limits"
 if args.nolog:
 	csv_file = open(args.logfile, 'a')
 	data_writer = csv.writer(csv_file)
-	data_writer.writerow(("timestamp_ns", "busv", "current", "power", "soc", "hall_speed", "int_r", "v_unloaded"))
+	data_writer.writerow(("timestamp_ns", "busv", "current", "power", "soc", "hall_speed", "int_r", "v_unloaded", "drain_time", "max_time"))
 
 uploader = Uploader(int(config["general"]["cache_size"]), server_addr, data_debug)
 
@@ -83,6 +85,8 @@ rawdata = b""
 saved_records = 0
 saved_voltages = []
 saved_currents = []
+saved_socs = []
+saved_times = []
 
 # continuously poll serial and process records
 def poll_serial(ser):
@@ -101,7 +105,7 @@ def poll_serial(ser):
 				info_debug.log(f"serial error: {e}")
 
 			time.sleep(max(0, 1 / read_freq - (time.time() - start)))
-			# print("read with console, nonfunctional for now")
+
 	except KeyboardInterrupt:
 		if args.nolog:
 			csv_file.close()
@@ -140,9 +144,9 @@ def process_record(record):
 
 # actually process record
 def process_telemetry_record(record):
-	global saved_records
-	global saved_voltages, saved_currents
+	global saved_records, saved_voltages, saved_currents, saved_socs, saved_times
 	try:
+		record_time = time.time_ns()
 		busv = float(record[0]) * busv_fac # volts
 		current = float(record[1]) * current_fac # amps
 		power = float(record[2]) * power_fac # watts
@@ -159,31 +163,48 @@ def process_telemetry_record(record):
 		saved_currents.append(current)
 		
 		assert len(saved_voltages) == len(saved_currents)
+		assert len(saved_socs) == len(saved_times)
 
-		if len(saved_voltages) > 250:
+		if len(saved_voltages) > res_soc_datrange:
 			del saved_voltages[0]
 			del saved_currents[0]
 
+		if len(saved_socs) > drain_datrange:
+			del saved_socs[0]
+			del saved_times[0]
+
 		int_r, v_unloaded = np.polyfit(saved_currents, saved_voltages, 1) # taken from /WilsonAPP/tkinter-telemetry.py
 		int_r = -int_r * 1000
-		
+
+		saved_socs.append(volts2soc_agm(v_unloaded))
+		saved_times.append(record_time)
+
+		soc_slope, soc_int = np.polyfit(saved_times, saved_socs, 1)
+		drain_time = None
+		max_time = None
+		if soc_slope != 0:
+			drain_time = -soc_int / soc_slope # point where soc reaches 0
+			max_time = (100 - soc_int) / soc_slope # point where soc is 100
+
 		data_debug.log('\n'.join([
 			f"busv: {busv} volts",
 			f"current: {current} amps",
 			f"power: {power} watts",
 			f"soc: {volts2soc_agm(v_unloaded)}%",
+			f"hall speed: {hall_speed} km/h",
 			f"internal resistance: {int_r} mΩ",
 			f"unloaded voltage: {v_unloaded} volts",
-			f"hall speed: {hall_speed} km/h", '']))
+			f"drain time: {drain_time} ns",
+			f"max time: {max_time} ns", '']))
 		if args.nolog:
-			data_writer.writerow((time.time_ns(), busv, current, power, volts2soc_agm(v_unloaded), hall_speed, int_r, v_unloaded))
+			data_writer.writerow((record_time, busv, current, power, volts2soc_agm(v_unloaded), hall_speed, int_r, v_unloaded, drain_time, max_time))
 		saved_records += 1
 
 		if saved_records >= int(config["general"]["save_freq"]) and args.nolog:
 			saved_records = 0
 			csv_file.flush()
 			os.fsync(csv_file.fileno())
-			# close and reopen to save written data in event of crash (the software, not the car hopefully)
+			# periodically save written data in event of crash (the software, not the car hopefully)
 
 		if server_addr is not None:
 			# uploader.new_record({
@@ -194,14 +215,16 @@ def process_telemetry_record(record):
 			#	"soc": volts2soc_agm(busv),
 			#	"hall_speed": hall_speed})
 			uploader.new_record([
-				time.time_ns(),
+				record_time,
 				busv,
 				current,
 				power,
 				volts2soc_agm(v_unloaded),
 				hall_speed,
 				int_r, # internal resistance (milliohms)
-				v_unloaded # unloaded voltage
+				v_unloaded, # unloaded voltage
+				drain_time, # estimated time of 0 soc
+				max_time # estimated time of 100 soc
 			])
 
 	except ValueError as e:
