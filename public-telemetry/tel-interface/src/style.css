@@ -33,6 +33,7 @@ nav {
 
 aside {
 	padding: 16px;
+	overflow: auto;
 /* 	width: 30vw; */
 }
 
@@ -44,17 +45,31 @@ main {
 	flex-wrap: wrap;
 }
 
-p {
-	margin-top: 8px;
+button {
+/* 	width: min-content; */
+	margin-top: 4px;
 	margin-bottom: 8px;
+	margin-left: 2px;
+	margin-right: 2px;
+	flex-grow: 1;
 }
 
-button {
-	margin-bottom: 16px;
+code {
+	color: black;
+}
+
+p {
+	margin-top: 2px;
+	margin-bottom: 2px;
+}
+
+hr {
+	margin-top: 16px;
+	margin-bottom: 8px;
 }
 
 input[type=range] {
-	margin-bottom: 8px;
+	margin: 8px 0;
 }
 
 .canvas-container {
@@ -64,9 +79,20 @@ input[type=range] {
 	height: 256px;
 }
 
+.btn-group {
+	display: flex;
+	flex-direction: row;
+}
+
 p.small {
 	font-size: 10pt;
 	color: #222222;
 	margin-top: 4px;
 	margin-bottom: 4px;
+}
+
+p.head {
+	font-weight: bold;
+/* 	margin-top: 16px; */
+	text-align: center;
 }

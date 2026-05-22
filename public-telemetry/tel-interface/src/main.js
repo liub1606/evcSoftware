@@ -10,6 +10,8 @@ var max_vis_len = 2 ** document.getElementById("dat-range").value;
 document.getElementById("range-num").textContent = 2 ** document.getElementById("dat-range").value;
 var cur_entry = 0;
 var req = 0;
+var lap_starts = [];
+var lap_times = [];
 
 Chart.defaults.color = "black";
 const volts_ctx = document.getElementById("busv-chart");
@@ -87,16 +89,16 @@ async function refresh_data() {
 		// console.log(response);
 		const result = await response.json();
 		// console.log(result);
-		console.log(result.upto);
+		// console.log(result.upto);
 		cur_entry = result.upto;
 		// console.log(result.records);
 		records = records.concat(result.records);
 		records = records.slice(-max_vis_len);
-		console.log(records);
+		// console.log(records);
 		var time = new Date(records[records.length - 1][0] / 1_000_000);
 		var drain_time = new Date(records[records.length - 1][8] / 1_000_000);
 		var min_remain = (drain_time.getTime() - Date.now()) / 1000 / 60;
-		console.log(min_remain);
+		// console.log(min_remain);
 		document.getElementById("timestamp").textContent = time.toLocaleTimeString();
 		document.getElementById("drain-timestamp").textContent = drain_time.toLocaleTimeString();
 		document.getElementById("busv").textContent = records[records.length - 1][1].toFixed(2);
@@ -109,7 +111,7 @@ async function refresh_data() {
 		document.getElementById("remain-timestamp").textContent = min_remain.toFixed(2);
 		document.getElementById("records").textContent = records.length;
 		document.getElementById("requests").textContent = req;
-		console.log(amps_chart.data.datasets[0]);
+		// console.log(amps_chart.data.datasets[0]);
 		for (let i = 0; i < result.records.length; i++) {
 			const timestamp = new Date(result.records[i][0] / 1_000_000);
 			volts_chart.data.datasets[0].data.push({x: timestamp, y: result.records[i][1]});
@@ -139,6 +141,12 @@ async function refresh_data() {
 	}
 }
 
+function hifreq() {
+	if (lap_starts.length > 0) {
+		document.getElementById("cur-lap").textContent = `${lap_times.length}: ${((Date.now() - lap_starts[0]) / 1_000).toFixed(1)}s`;
+	}
+}
+
 document.getElementById("dat-range").addEventListener("input", (event) => {
 	document.getElementById("range-num").textContent = 2 ** event.target.value;
 	max_vis_len = 2 ** document.getElementById("dat-range").value;
@@ -152,5 +160,34 @@ document.getElementById("dat-range").addEventListener("input", (event) => {
 	records = [];
 });
 
+document.getElementById("plus-lap").onclick = (event) => {
+	console.log("btn pressed");
+	lap_starts.unshift(Date.now());
+	// document.getElementById("lap-ct").textContent = laptimes.length;
+	if (lap_starts.length >= 2) {
+		lap_times.unshift(((lap_starts[0] - lap_starts[1]) / 1_000).toFixed(1))
+		document.getElementById("lap-time").insertAdjacentHTML("afterbegin", `${lap_times.length - 1}: ${lap_times[0]}s<br>`);
+		console.log(lap_times);
+	}
+}
+
+document.getElementById("download").onclick = (event) => {
+	const data = lap_times.map((el, idx) => {
+		return [Number(el), lap_starts[idx]];
+	})
+
+	const json_str = JSON.stringify(data, null, 2);
+	const blob = new Blob([json_str], {
+		type: "application/json"
+	});
+
+	const url = URL.createObjectURL(blob);
+	const a = document.createElement('a');
+	a.href = url;
+	a.download = "lap_data.json";
+	a.click();
+}
+
 refresh_data();
-setInterval(refresh_data, 1000);
+setInterval(refresh_data, 2000);
+setInterval(hifreq, 100);

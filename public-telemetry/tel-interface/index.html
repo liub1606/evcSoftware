@@ -13,21 +13,35 @@
 		</nav>
 
 		<aside data-sidebar>
-			<input type="range" id="dat-range" min=6 max=16 step=1 val=10>
-			<p>data range <code id="range-num"></code></p>
-			<p>refreshed <code id="timestamp"></code></p>
 			<!-- <p id="timestamp"></p> -->
+			<p class="head">basic</p>
 			<p>busv <code id="busv"></code> V</p>
 			<p>current <code id="current"></code> A</p>
 			<p>power <code id="power"></code> W</p>
 			<p>hall_speed <code id="hall-speed"></code> km/h</p>
 			<p>soc <code id="soc"></code>%</p>
+			<p>remaining <code id="remain-timestamp"></code> min</p>
+
+			<hr>
+			<p class="head">advanced</p>
+			<p>refreshed <code id="timestamp"></code></p>
 			<p>int res <code id="internal-resistance"></code> m&ohm;</p>
 			<p>busv unloaded <code id="unloaded-voltage"></code> V</p>
 			<p>drain time <code id="drain-timestamp"></code></p>
-			<p>remaining <code id="remain-timestamp"></code> min</p>
+			<input type="range" id="dat-range" min=6 max=16 step=1 val=10>
+			<p>data range <code id="range-num"></code></p>
 			<p class="small">records received <code id="records"></code></p>
 			<p class="small">requests made <code id="requests"></code></p>
+
+			<hr>
+			<p class="head">lap counter</p>
+			<div class="btn-group">
+				<button id="plus-lap">+lap</button>
+				<button class="outline" id="download">get json</button>
+			</div>
+			<code id="cur-lap">0: 0.0</code>
+			<hr>
+			<code id="lap-time"></code>
 		</aside>
 
 		<main>
