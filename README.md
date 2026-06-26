@@ -30,7 +30,6 @@ sudo usermod -a -G dialout $USER
 
 set up the python virtual environment and install libraries:
 ```bash
-mkdir venv
 python -m venv venv
 . venv/bin/activate
 pip install -r requirements.txt
