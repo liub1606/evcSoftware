@@ -16,14 +16,19 @@ there are 3 main parts
 - tel-server is a dumb flask server; it just receives records from the host and gives them out to the web-interface when requested. this can optionally run on a different computer.
 - tel-interface is the javascript frontend; it GETs data from the server and draws the charts. this is also hosted by tel-server so you shouldnt need to have it separately hosted.
 
-# installing dependencies
+# installing dependencies + setup
 first, clone the repo and cd into the public-telemetry directory:
 ```bash
 git clone https://github.com/liub1606/evcSoftware.git
 cd evcSoftware/public-telemetry/
 ```
 
-set up the python virtual environment and install libraries libraries:
+if your user is not part of the `dialout` group, you will need to run this command to access serial ports like ttyUSB0:
+```bash
+sudo usermod -a -G dialout $USER
+```
+
+set up the python virtual environment and install libraries:
 ```bash
 mkdir venv
 python -m venv venv
@@ -35,6 +40,8 @@ next, to install set up the web interface, install [nodejs and npm](https://node
 ```bash
 cd tel-interface/
 npm i
+npm run build
+cd ..
 ```
 
 all dependencies are now installed, and we are ready to run the software.
@@ -86,5 +93,7 @@ you can learn about the terminal options with the help flag:
 python host.py -h
 ```
 
-i rlly hope nobody has to use this on race day but if you are.... skill issue haha :3
+race logs will be saved in CSV files in tel-host/race-logs
+
+i rlly hope nobody has to use this guide on race day but if you are.... skill issue haha :3
 </details>
