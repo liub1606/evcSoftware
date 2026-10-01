@@ -81,7 +81,7 @@ cd tel-host/
 python host.py -s http://127.0.0.1:8080 -vv /dev/ttyUSB0
 
 # with an emulator
-python host.py -e /dev/pts/6 -s http://127.0.0.1:8080 -vv /dev/pts/7
+python host.py -e /dev/pts/6 -s http://127.0.0.1:8080 -vv /dev/pts/7 -n
 
 # with the server on a different device
 python host.py -s https://blah-blah-blah.trycloudflare.com -vv /dev/ttyUSB0
