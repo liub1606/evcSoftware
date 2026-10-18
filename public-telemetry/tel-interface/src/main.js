@@ -108,6 +108,7 @@ async function refresh_data() {
 		document.getElementById("hall-speed").textContent = records[records.length - 1][5].toFixed(2);
 		document.getElementById("internal-resistance").textContent = records[records.length - 1][6].toFixed(2);
 		document.getElementById("unloaded-voltage").textContent = records[records.length - 1][7].toFixed(2);
+		document.getElementById("accumulated-charge").textContent = records[records.length - 1][10].toFixed(2)
 		document.getElementById("remain-timestamp").textContent = min_remain.toFixed(2);
 		document.getElementById("records").textContent = records.length;
 		document.getElementById("requests").textContent = req;

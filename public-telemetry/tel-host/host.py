@@ -64,7 +64,7 @@ hall_speed_lim = (float(config["limits"]["hall_speed_min"]), int(config["limits"
 if args.nolog:
 	csv_file = open(args.logfile, 'a')
 	data_writer = csv.writer(csv_file)
-	data_writer.writerow(("timestamp_ns", "busv", "current", "power", "soc", "hall_speed", "int_r", "v_unloaded", "drain_time", "max_time"))
+	data_writer.writerow(("timestamp_ns", "busv", "current", "power", "soc", "hall_speed", "int_r", "v_unloaded", "drain_time", "max_time", "accumulated_charge"))
 
 uploader = Uploader(int(config["general"]["cache_size"]), server_addr, data_debug)
 
@@ -87,6 +87,8 @@ saved_voltages = []
 saved_currents = []
 saved_socs = []
 saved_times = []
+
+accumulated_charge = 0.0
 
 # continuously poll serial and process records
 def poll_serial(ser):
@@ -144,11 +146,13 @@ def process_record(record):
 
 # actually process record
 def process_telemetry_record(record):
-	global saved_records, saved_voltages, saved_currents, saved_socs, saved_times
+	global saved_records, saved_voltages, saved_currents, saved_socs, saved_times, accumulated_charge
 	try:
 		record_time = time.time_ns()
 		busv = float(record[0]) * busv_fac # volts
 		current = float(record[1]) * current_fac # amps
+		if len(saved_times) > 0:
+			accumulated_charge += current * (record_time - saved_times[-1]) / 3.6e12 # 3.6e12 to go from nanoamp-seconds to amp-hours
 		power = float(record[2]) * power_fac # watts
 		hall_speed = float(record[3]) * hall_speed_fac # km/h
 
@@ -195,11 +199,11 @@ def process_telemetry_record(record):
 			f"internal resistance: {int_r} mΩ",
 			f"unloaded voltage: {v_unloaded} volts",
 			f"drain time: {drain_time} ns",
-			f"max time: {max_time} ns", '']))
+			f"max time: {max_time} ns",
+			f"accumulated charge: {accumulated_charge} Ah", '']))
 		if args.nolog:
-			data_writer.writerow((record_time, busv, current, power, volts2soc_agm(v_unloaded), hall_speed, int_r, v_unloaded, drain_time, max_time))
+			data_writer.writerow((record_time, busv, current, power, volts2soc_agm(v_unloaded), hall_speed, int_r, v_unloaded, drain_time, max_time, accumulated_charge))
 		saved_records += 1
-
 		if saved_records >= int(config["general"]["save_freq"]) and args.nolog:
 			saved_records = 0
 			csv_file.flush()
@@ -224,7 +228,8 @@ def process_telemetry_record(record):
 				int_r, # internal resistance (milliohms)
 				v_unloaded, # unloaded voltage
 				drain_time, # estimated time of 0 soc
-				max_time # estimated time of 100 soc
+				max_time, # estimated time of 100 soc
+				accumulated_charge
 			])
 
 	except ValueError as e:
